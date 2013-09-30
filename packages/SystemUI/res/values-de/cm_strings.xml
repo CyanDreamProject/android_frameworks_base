@@ -74,4 +74,14 @@
     <string name="pie_phone_status_no_service">Kein Dienst</string>
     <string name="pie_phone_status_airplane_mode">Flugmodus</string>
     <string name="pie_phone_status_emergency_only">Nur Notrufe</string>
+
+    <!-- Halo -->
+    <string name="halo_dismiss">Benachrichtigung ignorieren</string>
+    <string name="halo_hide">HALO verstecken</string>
+    <string name="halo_clear_all">Alle Benachrichtigungen ignorieren</string>
+    <string name="halo_silence">Verstecken &amp; ruhen bis geweckt</string> 
+    <string name="halo_tutorial1">Dies ist HALO</string>
+    <string name="halo_tutorial2">Bewege mich: toppeltipp &amp; wischen</string>
+    <string name="halo_tutorial3">Aufgaben durchsuchen: Horizontaler Wisch</string>
+
 </resources>
