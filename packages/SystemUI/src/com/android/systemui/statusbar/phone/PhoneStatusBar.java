@@ -841,6 +841,7 @@ public class PhoneStatusBar extends BaseStatusBar {
                 } else {
                     mNetworkController.addCombinedLabelView(mCarrierLabel);
                 }
+
                 // set up the dynamic hide/show of the label
                 mPile.setOnSizeChangedListener(new OnSizeChangedListener() {
                     @Override
