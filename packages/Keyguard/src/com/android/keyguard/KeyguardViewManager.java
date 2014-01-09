@@ -16,12 +16,13 @@
 
 package com.android.keyguard;
 
+import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-
 import com.android.internal.policy.IKeyguardShowCallback;
 import com.android.internal.widget.LockPatternUtils;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
@@ -40,11 +41,6 @@ import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.SystemProperties;
 import android.provider.Settings;
-import android.renderscript.Allocation;
-import android.renderscript.Allocation.MipmapControl;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -86,8 +82,6 @@ public class KeyguardViewManager {
 
     private boolean mScreenOn = false;
     private LockPatternUtils mLockPatternUtils;
-
-    private Bitmap mBlurredImage = null;
 
     private KeyguardUpdateMonitorCallback mBackgroundChanger = new KeyguardUpdateMonitorCallback() {
         @Override
@@ -162,33 +156,6 @@ public class KeyguardViewManager {
         return res.getBoolean(R.bool.config_enableLockScreenTranslucentDecor);
     }
 
-    public void setBackgroundBitmap(Bitmap bmp) {
-        if (bmp != null) {
-            mBlurredImage = blurBitmap(bmp, bmp.getWidth() < 900 ? 14: 18);
-        } else {
-            mBlurredImage = null;
-        }
-    }
-
-    private Bitmap blurBitmap(Bitmap bmp, int radius) {
-        Bitmap out = Bitmap.createBitmap(bmp);
-        RenderScript rs = RenderScript.create(mContext);
-
-        Allocation input = Allocation.createFromBitmap(
-                rs, bmp, MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
-        Allocation output = Allocation.createTyped(rs, input.getType());
-
-        ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
-        script.setInput(input);
-        script.setRadius(radius);
-        script.forEach(output);
-
-        output.copyTo(out);
-
-        rs.destroy();
-        return out;
-    }
-
     class ViewManagerHost extends FrameLayout {
         private static final int BACKGROUND_COLOR = 0x70000000;
 
@@ -256,8 +223,7 @@ public class KeyguardViewManager {
             if (bgAspect > vAspect) {
                 mCustomBackground.setBounds(0, 0, (int) (vHeight * bgAspect), vHeight);
             } else {
-                mCustomBackground.setBounds(0, 0, vWidth,
-                        (int) (vWidth * (vAspect >= 1 ? bgAspect : (1 / bgAspect))));
+                mCustomBackground.setBounds(0, 0, vWidth, (int) (vWidth / bgAspect));
             }
         }
 
@@ -347,20 +313,15 @@ public class KeyguardViewManager {
         }
 
         if (force || mKeyguardView == null) {
-                mKeyguardHost.setCustomBackground(null);
-                mKeyguardHost.removeAllViews();
-                inflateKeyguardView(options);
-                mKeyguardView.requestFocus();
+            mKeyguardHost.setCustomBackground(null);
+            mKeyguardHost.removeAllViews();
+            inflateKeyguardView(options);
+            mKeyguardView.requestFocus();
         }
-
         updateUserActivityTimeoutInWindowLayoutParams();
         mViewManager.updateViewLayout(mKeyguardHost, mWindowLayoutParams);
 
         mKeyguardHost.restoreHierarchyState(mStateContainer);
-
-        if (mBlurredImage != null) {
-            KeyguardUpdateMonitor.getInstance(mContext).dispatchSetBackground(mBlurredImage);
-        }
     }
 
     private void inflateKeyguardView(Bundle options) {
@@ -434,6 +395,7 @@ public class KeyguardViewManager {
         } else {
             mWindowLayoutParams.flags &= ~WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
         }
+
         mViewManager.updateViewLayout(mKeyguardHost, mWindowLayoutParams);
     }
 
