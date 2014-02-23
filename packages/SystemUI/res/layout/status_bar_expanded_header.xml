@@ -76,7 +76,7 @@
         android:padding="2dp"
         />
     <FrameLayout android:id="@+id/action_button_holder"
-        android:layout_width="50dp"
+        android:layout_width="100dp"
         android:layout_height="50dp"
         android:layout_marginStart="12dp"
         >
